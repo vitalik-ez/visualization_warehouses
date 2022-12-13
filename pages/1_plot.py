@@ -23,13 +23,11 @@ def show_common_data(df):
     st.subheader('Locations of all warehouses')
     st.map(df)
 
-    print('time', type(df['time'][0]))
     st.subheader('The number of types of sensors for each warehouse')
     filt = (df['time'] == df['time'][0])
-    print("nunique", df['type_sensor'].nunique())
-    print(df[filt].groupby(['name']).get_group('Warehouse#2'))
-    #fig = px.bar(df, x="name", y=["motion sensor", "load sensors", "fire sensor", "smoke sensor"], title="Wide-Form Input")
-    #st.plotly_chart(fig, use_container_width=True)
+    count_type_sensors = df[filt].groupby('name')['type_sensor'].value_counts().to_frame(name='count').reset_index(level=[0,1])
+    fig = px.bar(count_type_sensors, x='name', y='count', color="type_sensor", title="Wide-Form Input")
+    st.plotly_chart(fig, use_container_width=True)
 
 
 
