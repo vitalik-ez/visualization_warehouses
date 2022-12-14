@@ -56,11 +56,11 @@ def show_common_data(df):
 def date_picker(start, end):
 
     col1, col2 = st.columns(2)
-    start_date = col1.date_input('Start date', start)
+    start_date = col1.date_input('Start date', datetime.datetime(2022, 11, 2)) # start
     start_time = col2.time_input('Start time', datetime.time(0, 0, 0))
 
     col3, col4 = st.columns(2)
-    end_date = col3.date_input('End date', end)
+    end_date = col3.date_input('End date', datetime.datetime(2022, 11, 5)) # end
     end_time = col4.time_input('End time', datetime.time(23, 59, 59))
 
     return (start_date, start_time), (end_date, end_time)
@@ -132,3 +132,10 @@ with st.container():
         else:
             st.warning(f'There are no data for time period: {start} -- {end}. Please choose another time period')
     
+hide_streamlit_style = """
+            <style>
+            
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True) 

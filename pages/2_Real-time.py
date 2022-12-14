@@ -13,6 +13,13 @@ st.set_page_config(
     layout="wide",
 )
 
+hide_streamlit_style = """
+            <style>
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
 @st.experimental_memo
 def load_data(path):
     df = pd.read_csv(path)
@@ -71,3 +78,5 @@ with st.container():
     option = st.selectbox('Choose warehouse', df['name'].unique().tolist())
     df = df[df['name'] == option]
     real_time(df)
+
+
