@@ -2,11 +2,8 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Головна сторінка",
-    page_icon="👋",
+    layout="wide",
 )
-
-
-print("123")    
 
 st.write("# Система моніторингу складських приміщень 👋")
 
