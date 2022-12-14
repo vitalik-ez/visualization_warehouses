@@ -5,6 +5,7 @@ import pandas as pd
 import datetime
 import plotly.express as px
 import plotly.graph_objects as go
+import random
 
 PATH_WAREHOUSES = 'data/warehouses.csv'
 
@@ -25,7 +26,7 @@ def show_common_data(df):
     st.map(df)
 
     st.subheader('The number of types of sensors for each warehouse')
-    filt = (df['time'] == df['time'][0])
+    filt = (df['time'] == df['time'].iloc[0])
     count_type_sensors = df[filt].groupby('name')['type_sensor'].value_counts().to_frame(name='count').reset_index(level=[0, 1])
     fig = px.bar(count_type_sensors, x='name', y='count', color="type_sensor",
                  title="The number of types of sensors for each warehouse",
@@ -37,9 +38,18 @@ def show_common_data(df):
     fig.update_layout(paper_bgcolor="#F9F9F9")
     st.plotly_chart(fig, use_container_width=True)
 
+    types_sensor = df['type_sensor'].unique().tolist()
+    st.subheader('Average data from devices by type of sensors for all warehouses')
+    for type_sensor in types_sensor:      
+        sensor_df = df[df['type_sensor'] == type_sensor].groupby(['time', 'name'])['value'].mean().reset_index(level=[0, 1])
+        fig = px.line(sensor_df, x="time", y="value", color='name',
+                        title=f"{type_sensor.upper()}",
+                        labels={
+                            "name": "Name of warehouse",
+                        },)
 
-
-    print(df)
+        fig.update_layout(paper_bgcolor="#F9F9F9")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -74,16 +84,7 @@ def show_warehouse_data(df, option):
 
     types_sensor = df['type_sensor'].unique().tolist()
     st.subheader(f'Data from devices')
-    for type_sensor in types_sensor:
-        #st.subheader(f'Graphics for {type_sensor}')
-
-        #device_ids = df[df['type_sensor'] == type_sensor]['device_id'].unique().tolist()
-        #for device_id in device_ids:
-        #    st.write(f'Device id: {device_id}')
-
-
-        #df = px.data.gapminder().query("continent=='Oceania'")
-        
+    for type_sensor in types_sensor:      
         device_df = df[df['type_sensor'] == type_sensor] #.groupby('device_id').value_counts().reset_index(name='count')
         fig = px.line(device_df, x="time", y="value", color='device_id',
                         title=f"{type_sensor.upper()}",
@@ -108,32 +109,24 @@ def show_warehouse_data(df, option):
     st.dataframe(df, use_container_width=st.session_state.use_container_width)
     
 
-
-
-
-    
-
-
-
 df = load_data(PATH_WAREHOUSES)
 
-st.title("Data visualization")
-option = st.selectbox('Choose warehouse', [
-                      "All"] + df['name'].unique().tolist())
+with st.container():
+    st.title("Data visualization")
+    option = st.selectbox('Choose warehouse', [
+                        "All"] + df['name'].unique().tolist())
 
-if option == 'All':
-    st.write('Show common data')
-    show_common_data(df)
-else:
-    df = df[df['name'] == option]
     (start_date, start_time), (end_date, end_time) = date_picker(df['time'].iat[0], df['time'].iat[-1])
+    start = datetime.datetime.combine(start_date, start_time)
+    end = datetime.datetime.combine(end_date, end_time)
+    filt = (df['time'] >= start) & (df['time'] <= end)
+    df = df[filt]
     if start_date > end_date:
         st.error("The start date must be earlier than the end date.")
+    elif option == 'All':
+        show_common_data(df)
     else:
-        start = datetime.datetime.combine(start_date, start_time)
-        end = datetime.datetime.combine(end_date, end_time)
-        filt = (df['time'] >= start) & (df['time'] <= end)
-        df = df[filt]
+        df = df[df['name'] == option]
         if not df.empty:
             show_warehouse_data(df, option)
         else:
